@@ -125,9 +125,9 @@ module I18nRouting
       if !@set.named_routes.respond_to?(:define_localized_url_helper)
         @set.named_routes.class_eval <<-END_EVAL, __FILE__, __LINE__ + 1
           alias_method :localized_define_url_helper, :define_url_helper
-          def define_url_helper(route, name, options)
-            localized_define_url_helper(route, name, options)
-            define_localized_url_helper(route, name, options)
+          def define_url_helper(mod, route, name, opts, route_key, url_strategy)
+            localized_define_url_helper(mod, route, name, opts, route_key, url_strategy)
+            define_localized_url_helper(mod, route, name, opts, route_key, url_strategy)
           end
         END_EVAL
 
@@ -352,7 +352,7 @@ module I18nRouting
 
     # Alias named route helper in order to check if a localized helper exists
     # If not use the standard one.
-    def define_localized_url_helper(route, name, options)
+    def define_localized_url_helper(mod, route, name, opts, route_key, url_strategy)
       if n = localizable
         # rails 4 fix
         selector = name
@@ -367,21 +367,20 @@ module I18nRouting
                   "glang_#{selector}"
                 end
 
-        @module.module_eval <<-end_eval # We use module_eval to avoid leaks
-          alias_method :localized_#{selector}, :#{selector}
+        mod.module_eval do
+          alias_method "localized_#{selector}", selector
 
-          def #{selector}(*args)
-            selector_g = '#{rlang}'.gsub('glang', I18nRouting.locale_escaped(I18n.locale.to_s)).to_sym
+          define_method selector do |args|
+            selector_g = "#{rlang}".gsub('glang', I18nRouting.locale_escaped(I18n.locale.to_s)).to_sym
 
             #puts "Call routes : #{selector} => \#{selector_g} (\#{I18n.locale}) "
-            if respond_to? selector_g and selector_g != :#{selector}
-              send(selector_g, *args)
+            if respond_to? selector_g and selector_g != selector.to_sym
+              send(selector_g, args)
             else
-              localized_#{selector}(*args)
+              send("localized_#{selector}", args)
             end
           end
-
-        end_eval
+        end
 
       end
     end
