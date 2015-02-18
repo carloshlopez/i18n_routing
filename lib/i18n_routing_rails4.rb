@@ -370,14 +370,14 @@ module I18nRouting
         mod.module_eval do
           alias_method "localized_#{selector}", selector
 
-          define_method selector do |args|
+          define_method selector do |*args|
             selector_g = "#{rlang}".gsub('glang', I18nRouting.locale_escaped(I18n.locale.to_s)).to_sym
 
             #puts "Call routes : #{selector} => \#{selector_g} (\#{I18n.locale}) "
             if respond_to? selector_g and selector_g != selector.to_sym
-              send(selector_g, args)
+              send(selector_g, *args)
             else
-              send("localized_#{selector}", args)
+              send("localized_#{selector}", *args)
             end
           end
         end
