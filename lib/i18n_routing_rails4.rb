@@ -40,7 +40,7 @@ module I18nRouting
           if !localized_path.blank? and String === localized_path
             puts("[I18n] > localize %-10s: %40s (%s) => /%s" % [type, resource.name, locale, localized_path]) if @i18n_verbose
             opts = options.dup
-            opts[:path] = @locales.count > 1 ? "#{locale}/#{localized_path}" : localized_path
+            opts[:path] = (@locales.count > 1 and not @omit_locale) ? "#{locale}/#{localized_path}" : localized_path
             opts[:controller] ||= r.to_s.pluralize
             opts[:locale] = locale.to_sym
 
@@ -152,6 +152,7 @@ module I18nRouting
 
       old_value = @locales
       @locales = locales
+      @omit_locale = opts.delete(:omit_locale)
       @i18n_verbose ||= opts.delete(:verbose)
       yield
     ensure
