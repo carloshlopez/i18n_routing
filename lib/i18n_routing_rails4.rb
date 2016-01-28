@@ -32,6 +32,7 @@ module I18nRouting
 
         # Check for translated resource
         stored_locale = I18n.locale
+
         @locales.each do |locale|
           I18n.locale = locale
           localized_path = I18nRouting.translation_for(resource.name, type)
@@ -40,7 +41,7 @@ module I18nRouting
           if !localized_path.blank? and String === localized_path
             puts("[I18n] > localize %-10s: %40s (%s) => /%s" % [type, resource.name, locale, localized_path]) if @i18n_verbose
             opts = options.dup
-            opts[:path] = (@locales.count > 1 and not @omit_locale) ? "#{locale}/#{localized_path}" : localized_path
+            opts[:path] = (Admin::AppConfig.get('base.available_locales').count > 1 and not @omit_locale) ? "#{locale}/#{localized_path}" : localized_path
             opts[:controller] ||= r.to_s.pluralize
             opts[:locale] = locale.to_sym
 
@@ -164,7 +165,7 @@ module I18nRouting
       set_localizable_route(nil) do
         old = @localized_branch
         @localized_branch = locale
-        localized([locale]) do
+        localized([locale], omit_locale: @omit_locale ) do
           yield
         end
         @localized_branch = old
