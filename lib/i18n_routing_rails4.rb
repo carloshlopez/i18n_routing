@@ -131,9 +131,9 @@ module I18nRouting
       if !@set.named_routes.respond_to?(:define_localized_url_helper)
         @set.named_routes.class_eval <<-END_EVAL, __FILE__, __LINE__ + 1
           alias_method :localized_define_url_helper, :define_url_helper
-          def define_url_helper(route, name, options)
-            localized_define_url_helper(route, name, options)
-            define_localized_url_helper(route, name, options)
+          def define_url_helper(route, name, options, components, route_name, route_set)
+          localized_define_url_helper(route, name, options, components, route_name, route_set)
+          define_localized_url_helper(route, name, options)
           end
         END_EVAL
 
